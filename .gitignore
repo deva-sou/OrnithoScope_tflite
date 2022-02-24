@@ -3,5 +3,5 @@ data/
 notebooks/
 
 # Ignore dot file
-**/.DS_Store
+.DS_Store
 .idea/*
