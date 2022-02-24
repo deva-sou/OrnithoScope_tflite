@@ -1,6 +1,4 @@
 # Ignore directories:
-data/
-notebooks/
 
 # Ignore dot file
 .DS_Store
