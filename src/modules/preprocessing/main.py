@@ -11,7 +11,7 @@ import numpy as np
 import seaborn as sns
 
 # Module imports
-import preprocessing_stats_img_raw_data
+import get_img_number
 
 # Main
-preprocessing_stats_img_raw_data.main()
+get_img_number.main()
