@@ -3,13 +3,14 @@ import os.path
 import pandas as pd
 from xml.etree import ElementTree as ET
 
-import variables_model_creation as v
+import variables_generate_input as v
 
 
 def get_info_from_one_xml(xml_path, list_object):
     i = 0
     tree = ET.parse(xml_path)
     root = tree.getroot()
+    df_tasks = import_tasks_as_df()
     # Filename Extraction and local path creation
     filename = root.find("./filename").text
     local_img_path = f"{v.path_raw_data}{filename.split('/', 1)[1]}"
@@ -17,6 +18,7 @@ def get_info_from_one_xml(xml_path, list_object):
     width = int(root.find("./size/width").text)
     height = int(root.find("./size/height").text)
 
+    task_name = filename.split('/')[1]
     for object in root.findall("./object"):
         # Extract specie name
         for attributes in object.findall("./attributes/"):
@@ -24,7 +26,7 @@ def get_info_from_one_xml(xml_path, list_object):
                 specie = attributes.find('value').text
         # Data creation
         data = {}
-        data['split_value'] = 'TRAINING'
+        data['split_value'] = check_split_value(df_tasks, task_name)
         data['file_path'] = local_img_path
         data['label'] = specie
         # Extract bndbx
@@ -44,6 +46,23 @@ def get_info_from_one_xml(xml_path, list_object):
     return list_object
 
 
+def import_tasks_as_df():
+    df_task = pd.read_csv(v.path_ornithoTasks)
+    df_task = df_task.rename(columns={"Task name": "task_name"})
+    return df_task
+
+
+def check_split_value(df, task_name):
+    row_specific_task = df[df['task_name'] == task_name]
+    val = row_specific_task['Split'].values[0]
+    if val == 'TRAIN':
+        return 'TRAINING'
+    elif val == 'TEST':
+        return 'TESTING'
+    elif val == 'VALIDATE':
+        return 'VALIDATING'
+
+
 def get_info_from_all_xml(tasks_dir, list_object):
     for i in range(len(tasks_dir)):
         # For each task
@@ -53,19 +72,22 @@ def get_info_from_all_xml(tasks_dir, list_object):
         image_paths = sorted(os.listdir(complete_path))
         for img in range(len(image_paths)):
             xml_path = complete_path + image_paths[img]
-            list_of_data = get_info_from_one_xml(xml_path, list_object)
-        return list_object
+            get_info_from_one_xml(xml_path, list_object)
+    return list_object
 
 
 def df_to_csv(df, path_and_name_csv):
-    df.to_csv(path_and_name_csv, encoding='utf-8', index=False, header=False)
+    return df.to_csv(path_and_name_csv, encoding='utf-8', index=False, header=False)
+
+
+def csv_to_df(csv_path):
+    return pd.DataFrame.to_csv(csv_path)
 
 
 def create_df_for_input(list_of_object):
     count = 0
     list_df = []
     for object in list_of_object:
-        print(object)
         count += 1
         content = pd.DataFrame(object, index=[count])
         list_df.append(content)
@@ -83,4 +105,4 @@ def create_input_as_df(tasks_dir, list_object):
 
 def create_input_as_csv():
     df = create_input_as_df(v.tasks_dir, v.list_object)
-    df_to_csv(df, v.path_and_name_csv)
+    df_to_csv(df, v.path_input_csv)

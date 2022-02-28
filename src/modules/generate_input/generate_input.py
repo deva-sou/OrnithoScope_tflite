@@ -2,6 +2,8 @@
 @Authors: SOU Deva, CARLIER Axel
 """
 
-import toolbox_model_creation as toolbox
+# Imports
+import toolbox_generate_input_copy as toolbox
 
+# Main
 toolbox.create_input_as_csv()
