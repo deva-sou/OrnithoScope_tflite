@@ -6,9 +6,8 @@ from xml.etree import ElementTree as ET
 import variables_model_creation as v
 
 
-def get_info_from_one_xml(xml_path):
+def get_info_from_one_xml(xml_path, list_object):
     i = 0
-    list_of_data = []
     tree = ET.parse(xml_path)
     root = tree.getroot()
     # Filename Extraction and local path creation
@@ -24,7 +23,10 @@ def get_info_from_one_xml(xml_path):
             if attributes.find('name').text == 'species':
                 specie = attributes.find('value').text
         # Data creation
-        data = {'split_value': 'TRAINING', 'file_path': local_img_path, 'label': specie}
+        data = {}
+        data['split_value'] = 'TRAINING'
+        data['file_path'] = local_img_path
+        data['label'] = specie
         # Extract bndbx
         bndbox = object.find('./bndbox')
         x_min = round(float(bndbox.find("xmin").text) / width, 4)
@@ -38,12 +40,11 @@ def get_info_from_one_xml(xml_path):
         data['x_max'] = x_max
         data['y_max'] = y_max
         data["empty_3"] = ""
-        list_of_data.append(data)
-    return list_of_data
+        list_object.append(data)
+    return list_object
 
 
-def get_info_from_all_xml(tasks_dir):
-    list_object = []
+def get_info_from_all_xml(tasks_dir, list_object):
     for i in range(len(tasks_dir)):
         # For each task
         task_name = tasks_dir[i]
@@ -52,8 +53,7 @@ def get_info_from_all_xml(tasks_dir):
         image_paths = sorted(os.listdir(complete_path))
         for img in range(len(image_paths)):
             xml_path = complete_path + image_paths[img]
-            list_of_data = get_info_from_one_xml(xml_path)
-            list_object.append(list_of_data)
+            list_of_data = get_info_from_one_xml(xml_path, list_object)
         return list_object
 
 
@@ -72,16 +72,15 @@ def create_df_for_input(list_of_object):
     df_input = pd.concat(list_df)
     for label in v.unwanted_labels_list:
         df_input = df_input[(df_input.label != label)]
-    print('TEST', df_input)
     return df_input
 
 
-def create_input_as_df(tasks_dir):
-    input_for_model = get_info_from_all_xml(tasks_dir)
+def create_input_as_df(tasks_dir, list_object):
+    input_for_model = get_info_from_all_xml(tasks_dir, list_object)
     df = create_df_for_input(input_for_model)
     return df
 
 
 def create_input_as_csv():
-    df = create_input_as_df(v.tasks_dir)
+    df = create_input_as_df(v.tasks_dir, v.list_object)
     df_to_csv(df, v.path_and_name_csv)

@@ -9,3 +9,4 @@ columns_input_data = ["split_value", "file_path", "label", "x_min", "y_min", "em
                       "empty_3"]
 df_input = pd.DataFrame(columns=columns_input_data)
 path_and_name_csv = '/Users/devasou/Desktop/input.csv'
+list_object = []
