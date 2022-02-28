@@ -65,11 +65,9 @@ def create_df_for_input(list_of_object):
     count = 0
     list_df = []
     for object in list_of_object:
-        count += 1
-        print(count)
         print(object)
+        count += 1
         content = pd.DataFrame(object, index=[count])
-        print(content)
         list_df.append(content)
     df_input = pd.concat(list_df)
     for label in v.unwanted_labels_list:
