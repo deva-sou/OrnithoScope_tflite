@@ -7,7 +7,6 @@ import variables_generate_input as v
 
 
 def get_info_from_one_xml(xml_path, list_object):
-    i = 0
     tree = ET.parse(xml_path)
     root = tree.getroot()
     df_tasks = import_tasks_as_df()
@@ -17,32 +16,46 @@ def get_info_from_one_xml(xml_path, list_object):
     # Width and height extraction
     width = int(root.find("./size/width").text)
     height = int(root.find("./size/height").text)
-
     task_name = filename.split('/')[1]
+
     for object in root.findall("./object"):
         # Extract specie name
         for attributes in object.findall("./attributes/"):
             if attributes.find('name').text == 'species':
                 specie = attributes.find('value').text
-        # Data creation
-        data = {}
-        data['split_value'] = check_split_value(df_tasks, task_name)
-        data['file_path'] = local_img_path
-        data['label'] = specie
-        # Extract bndbx
-        bndbox = object.find('./bndbox')
-        x_min = round(float(bndbox.find("xmin").text) / width, 4)
-        y_min = round(float(bndbox.find("ymin").text) / height, 4)
-        x_max = round(float(bndbox.find("xmax").text) / width, 4)
-        y_max = round(float(bndbox.find("ymax").text) / height, 4)
-        data['x_min'] = x_min
-        data['y_min'] = y_min
-        data["empty_1"] = ""
-        data["empty_2"] = ""
-        data['x_max'] = x_max
-        data['y_max'] = y_max
-        data["empty_3"] = ""
-        list_object.append(data)
+                # Data creation
+                data = {}
+                data['split_value'] = 'TRAINING'
+                data['file_path'] = local_img_path
+                data['label'] = specie
+                # Extract bndbx
+                bndbox = object.find('./bndbox')
+                x_min = round(float(bndbox.find("xmin").text) / width, 4)
+                y_min = round(float(bndbox.find("ymin").text) / height, 4)
+                x_max = round(float(bndbox.find("xmax").text) / width, 4)
+                y_max = round(float(bndbox.find("ymax").text) / height, 4)
+                data['x_min'] = x_min
+                data['y_min'] = y_min
+                data["empty_1"] = ""
+                data["empty_2"] = ""
+                data['x_max'] = x_max
+                data['y_max'] = y_max
+                data["empty_3"] = ""
+                list_object.append(data)
+    return list_object
+
+
+def get_info_from_all_xml(tasks_dir, list_object):
+    for i in range(len(tasks_dir)):
+        # For each task
+        task_name = tasks_dir[i]
+        complete_path = v.path_annotation + task_name + '/Annotations/bird/' + task_name + '/'
+        # Get all images of a task
+        image_paths = sorted(os.listdir(complete_path))
+        for img in range(len(image_paths)):
+            xml_path = complete_path + image_paths[img]
+            nb_object = get_info_from_one_xml(xml_path, list_object)
+            #print(xml_path, 'done')
     return list_object
 
 
@@ -58,22 +71,9 @@ def check_split_value(df, task_name):
     if val == 'TRAIN':
         return 'TRAINING'
     elif val == 'TEST':
-        return 'TESTING'
+        return 'TEST'
     elif val == 'VALIDATE':
-        return 'VALIDATING'
-
-
-def get_info_from_all_xml(tasks_dir, list_object):
-    for i in range(len(tasks_dir)):
-        # For each task
-        task_name = tasks_dir[i]
-        complete_path = v.path_annotation + task_name + '/Annotations/bird/' + task_name + '/'
-        # Get all images of a task
-        image_paths = sorted(os.listdir(complete_path))
-        for img in range(len(image_paths)):
-            xml_path = complete_path + image_paths[img]
-            get_info_from_one_xml(xml_path, list_object)
-    return list_object
+        return 'VALIDATION'
 
 
 def df_to_csv(df, path_and_name_csv):
@@ -97,12 +97,18 @@ def create_df_for_input(list_of_object):
     return df_input
 
 
-def create_input_as_df(tasks_dir, list_object):
-    input_for_model = get_info_from_all_xml(tasks_dir, list_object)
-    df = create_df_for_input(input_for_model)
+def create_input_as_df(task_dir, list_object):
+    print('Import data ...')
+    get_info_from_all_xml(task_dir, list_object)
+    print('Done!')
+    print('Create dataframe ...')
+    df = create_df_for_input(list_object)
+    print('Done!')
     return df
 
 
-def create_input_as_csv():
-    df = create_input_as_df(v.tasks_dir, v.list_object)
-    df_to_csv(df, v.path_input_csv)
+def create_input_as_csv(tasks_dir, list_object, path_input_csv):
+    df = create_input_as_df(tasks_dir, list_object)
+    print('Export to csv ...')
+    df_to_csv(df, path_input_csv)
+    print('Done!')
