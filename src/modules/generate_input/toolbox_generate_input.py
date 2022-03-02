@@ -16,7 +16,8 @@ def get_info_from_one_xml(xml_path, list_object):
     # Width and height extraction
     width = int(root.find("./size/width").text)
     height = int(root.find("./size/height").text)
-    task_name = filename.split('/')[1]
+    task_name_xml = filename.split('/')[1]
+    # print('task_name', task_name_xml)
 
     for object in root.findall("./object"):
         # Extract specie name
@@ -25,7 +26,7 @@ def get_info_from_one_xml(xml_path, list_object):
                 specie = attributes.find('value').text
                 # Data creation
                 data = {}
-                data['split_value'] = 'TRAINING'
+                data['split_value'] = check_split_value(pd.read_csv(v.path_ornithoTasks), task_name_xml)
                 data['file_path'] = local_img_path
                 data['label'] = specie
                 # Extract bndbx
@@ -54,8 +55,8 @@ def get_info_from_all_xml(tasks_dir, list_object):
         image_paths = sorted(os.listdir(complete_path))
         for img in range(len(image_paths)):
             xml_path = complete_path + image_paths[img]
-            nb_object = get_info_from_one_xml(xml_path, list_object)
-            #print(xml_path, 'done')
+            get_info_from_one_xml(xml_path, list_object)
+            # print(xml_path, 'done')
     return list_object
 
 
@@ -67,7 +68,9 @@ def import_tasks_as_df():
 
 def check_split_value(df, task_name):
     row_specific_task = df[df['task_name'] == task_name]
+    # print('spe task ', row_specific_task)
     val = row_specific_task['Split'].values[0]
+    # print('val ', val)
     if val == 'TRAIN':
         return 'TRAINING'
     elif val == 'TEST':
@@ -76,12 +79,36 @@ def check_split_value(df, task_name):
         return 'VALIDATION'
 
 
+def add_validation_split_value(df):
+    print(df[df['Split'] == 'TRAINING'])
+    return df
+
 def df_to_csv(df, path_and_name_csv):
     return df.to_csv(path_and_name_csv, encoding='utf-8', index=False, header=False)
 
 
 def csv_to_df(csv_path):
     return pd.DataFrame.to_csv(csv_path)
+
+
+def generate_validation_split_value(df_for_input):
+    df = df_for_input.reset_index(drop=True)
+    j = 0
+    for index, row in df.iterrows():
+        if row['split_value'] == 'TRAINING':
+            j += 1
+            # print('j current', j)
+            # print('split value before ', row['split_value'])
+            if j == 10:
+                # print(_.split_value.iloc[index])
+                # _.split_value.iloc[index] = _.split_value.iloc[index].replace('VALIDATION')
+                df.iloc[index, df.columns.get_loc('split_value')] = 'VALIDATION'
+                # print('split value after ', row['split_value'])
+                j = 0
+    print('TRAIN ', df[df.split_value == 'TRAINING'].shape[0])
+    print('VALIDATION ', df[df.split_value == 'VALIDATION'].shape[0])
+    print('TEST ', df[df.split_value == 'TEST'].shape[0])
+    return df
 
 
 def create_df_for_input(list_of_object):
@@ -102,13 +129,16 @@ def create_input_as_df(task_dir, list_object):
     get_info_from_all_xml(task_dir, list_object)
     print('Done!')
     print('Create dataframe ...')
-    df = create_df_for_input(list_object)
+    df_raw = create_df_for_input(list_object)
     print('Done!')
-    return df
+    print('Create validation set ...')
+    df_input = generate_validation_split_value(df_raw)
+    print('Done!')
+    return df_input
 
 
 def create_input_as_csv(tasks_dir, list_object, path_input_csv):
-    df = create_input_as_df(tasks_dir, list_object)
+    df_input = create_input_as_df(tasks_dir, list_object)
     print('Export to csv ...')
-    df_to_csv(df, path_input_csv)
+    df_to_csv(df_input, path_input_csv)
     print('Done!')
