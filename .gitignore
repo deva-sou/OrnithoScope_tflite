@@ -1,5 +1,5 @@
 # Ignore directories:
-
+ornithoScope_virtualenv
 # Ignore dot file
 .DS_Store
 .idea/*
