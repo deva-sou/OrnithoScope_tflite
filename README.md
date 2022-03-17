@@ -19,3 +19,17 @@ This project contains its own virtual environment.
 source ornithoScope_virtualenv/bin/activate
 pip install -r requirements.txt
 ```
+
+La base de données qui nous est fournie regroupe 11 espèces d'animaux, majoritairement des oiseaux, désignés par un code : 
+
+1. Mésange charbonnière (**MESCHA**)
+2. Verdier d'Europe (**VEREUR**)
+3. Écureuil roux (**ECUROU**)
+4. Pie bavarde (**PIEBAV**)
+5. Sittelle torchepot (**SITTOR**)
+6. Pinson des arbres (**PINARB**)
+7. Mésange noire (**MESNOI**)
+8. Mésange nonnette (**MESNON**)
+9. Mésange bleue (**MESBLE**)
+10. Rouge-gorge (**ROUGOR**)
+11. Accenteur mouchet (**ACCMOU**)
