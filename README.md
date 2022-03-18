@@ -16,9 +16,24 @@ Following [this](https://gist.github.com/cuongtvee/738fe439598c38c18835aa581c90e
 This project contains its own virtual environment. 
 
 ```
+virtualenv ornithoScope_virtualenv
 source ornithoScope_virtualenv/bin/activate
 pip install -r requirements.txt
 ```
+
+## Create input data
+
+1. Change data location in src/modules/generate_input/variables_generate_input.py
+2. In the current directory of the MakeFile:  ```make input```
+
+
+
+
+
+
+
+## MISC:
+
 
 La base de données qui nous est fournie regroupe 11 espèces d'animaux, majoritairement des oiseaux, désignés par un code : 
 
