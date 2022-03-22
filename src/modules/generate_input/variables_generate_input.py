@@ -2,10 +2,18 @@ import os
 import pandas as pd
 
 # PATHS
+'''
 path_annotation = '/home/deva/code/data_ornitho/annotations/'
 path_raw_data = '/home/deva/code/data_ornitho/raw_data/'
 path_input_csv = '/home/deva/code/OrnithoScope/data/input.csv'
 path_ornithoTasks = '/home/deva/code/OrnithoScope/data/Ornithotasks - CVAT_task.csv'
+'''
+path_annotation = '/home/acarlier/OrnithoMate/p0133_bird_data/annotations/'
+path_raw_data = '/home/acarlier/OrnithoMate/p0133_bird_data/raw_data/'
+path_input_csv = '/home/acarlier/code/OrnithoScope/data/input.csv'
+path_ornithoTasks = '/home/acarlier/code/OrnithoScope/data/Ornithotasks - CVAT_task.csv'
+
+
 tasks_dir = sorted(os.listdir(path_annotation))
 
 #
